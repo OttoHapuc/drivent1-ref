@@ -1,23 +1,30 @@
-import { Request, Response, NextFunction } from 'express';
-import httpStatus from 'http-status';
+import ticketsRepository from '@/repositories/tickets-repositoriy';
+import enrollmentRepository from '@/repositories/enrollment-repository';
 import { notFoundError } from '@/errors';
 
-async function getTicketsTypes() {
-  //    retornar lista de typos de tickets
-  //    const {rows: result} = ;
-  return;
+async function insertUserTicket(userId: number, ticketTypeId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw notFoundError();
+  await ticketsRepository.insertNewTicket(ticketTypeId, enrollment.id);
+  const ticket = await ticketsRepository.findUserTicket(enrollment.userId);
+  return ticket;
 }
-async function getTickets(userId: number) {
-  //    validar user id se é existente 401
-  //    verificar se o usuário tem cadastro/inscrição 404
-  //    usuário sem ingresso 404
 
-  //    retornar tiket do usuário
-  //    const {rows: ticketsUser} = (userId);
-  return; // ticketsUser
+async function getUserTicket(userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw notFoundError();
+  const userTicket = await ticketsRepository.findUserTicket(userId);
+  if (!userTicket) throw notFoundError();
+  return userTicket;
+}
+
+async function getAllTicketsTypes() {
+  const ticketsTypes = await ticketsRepository.TicketsTypes();
+  return ticketsTypes;
 }
 
 export default {
-  getTicketsTypes,
-  getTickets,
+  insertUserTicket,
+  getAllTicketsTypes,
+  getUserTicket,
 };
